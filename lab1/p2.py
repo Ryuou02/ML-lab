@@ -13,7 +13,17 @@ def matrixMultiply(a,b):
 				productMatrix[y][x] += a[y][i] * b[i][x]
 	return productMatrix
 
+def takeMatrixInput():
+	matrix = []
+	rows = int(input("enter rows : "))
+	cols = int(input("enter cols : "))
+	for i in range(rows):
+		temp = []
+		for j in range(cols):
+			temp.append(int(input(f"matrix[{i}][{j}] = ")))
+		matrix.append(temp)
+	return matrix
 
-a = [[1,2,3],[4,5,6],[7,8,9]]
-print(matrixMultiply(a,a))
-print(numpy.matmul(a,a))
+a = takeMatrixInput()
+b = takeMatrixInput()
+print(matrixMultiply(a,b))
