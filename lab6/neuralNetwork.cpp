@@ -5,9 +5,12 @@
 
 using namespace std;
 
-#define Q9
+#define Q3
+
+#define LAB6
 
 int main(){
+#ifdef LAB6
 #ifdef Q2
 	perceptron perceptron1 = perceptron(sigmoid,{10,0.2,-0.75},2);
 
@@ -128,7 +131,7 @@ int main(){
 
 	double outputs[] = {0,0,0,1};
 	neuralNetwork n1(100, 2);
-	n1.train(in, outputs, 10000);
+	n1.train(in, outputs, 1000000);
 	std::cout << '\n';
 	for (int i = 0; i < 4; i++)
 		std::cout << n1.predict(inputs[i]) << "\n";
@@ -148,5 +151,29 @@ int main(){
 	for (int i = 0; i < 4; i++)
 		std::cout << n1.predict(inputs[i]) << "\n";
 #endif
+#ifdef Q10
+	srand(time(0));								// randomly chosen value.
+	double inputs[][2] = { {0,0},{0,1},{1,0},{1,1} };
+	double outputs[][2] = { {1,0},{1,0} ,{1,0} ,{0,1} };
+	vector<double*> in(4);
+	vector<double*> out(4);
 
+	for (int i = 0; i < 4; i++) {
+		in[i] = inputs[i];
+		out[i] = outputs[i];
+	}
+	neuralNetwork n1(2, 2,2);
+	
+	n1.train(in, out, 100000, 1);
+	std::cout << '\n';
+	for (int i = 0; i < 4; i++) {
+		double* pred = n1.predict(inputs[i]);
+		for (int j = 0; j < 2; j++)
+			std::cout << pred[j] << '\n';
+		std::cout << '\n';
+		delete[] pred;
+	}
+
+#endif
+#endif
 }
