@@ -48,23 +48,21 @@ def checkAccuracy(clf, y_test, X_test):
     print("error......")
  
 df = pd.read_csv(dataset,encoding='windows-1252')
-# df = df.tail(429 - 161)
 wc = Counter()
 for answer in df["answer"]:
   answer = str(answer)
   answer = answer.lower()
   wc.update(Counter(word_tokenize(answer)))
 
-# print(wc)
-
 # we only consider the most common words out of all
 com_words = dict(wc.most_common(34))
+# uptil 34th word is considered because the 34th word is "uhh" which is considered to be very important filler word.
 
 vocabulary_count = dict(wc)
 vocabulary = list(wc.keys())
 
 # now take each of these words one by one, in order to predict for clarity.
-# we use term frequency vectorizer for these 40 words
+# we use term frequency vectorizer for these 34 words
 # instead of doing vectorization, another approach would be to remove each of the words in order and see the new length of the answer
 # we classify clarity based on the ratio between the previous length of the answer and the new length.
 
@@ -82,9 +80,6 @@ for answer in df['answer']:
 ###################################################################################
 #################### CLASSIFICATION USING ML ######################################
 ###################################################################################
-# now, out of these, we use dimensionality reduction to choose the most useful words
-# decision tree classifier is used.
-
 
 from imblearn.over_sampling import SMOTE
 
