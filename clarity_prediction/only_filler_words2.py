@@ -1,3 +1,4 @@
+# mlp classifier and random forest models are hyper-parmameter tuned and backward dimensionality reduction is performed in order to maximize prediction accuracy.
 import random
 from sklearn.model_selection import GridSearchCV
 from sklearn.ensemble import AdaBoostClassifier,GradientBoostingClassifier
@@ -52,7 +53,6 @@ def checkAccuracy2(y_test, layer1:list, layer2):
       y_pred.append(layer1[i])
     else:
       y_pred.append(layer2[i])
-  # F1_score = f1_score(y_test, y_pred)
   
   confusionMatrixDisplay = ConfusionMatrixDisplay(confusion_matrix(y_test, y_pred))
   confusionMatrixDisplay.plot()
@@ -61,15 +61,12 @@ def checkAccuracy2(y_test, layer1:list, layer2):
   print(f'Accuracy: {accuracy_score(y_test, y_pred)}')
 
 df = pd.read_csv(dataset,encoding='windows-1252')
-# df = df.tail(429 - 161)
 
 wc = Counter()
 for answer in df["answer"]:
   answer = str(answer)
   answer = answer.lower()
   wc.update(Counter(word_tokenize(answer)))
-
-# print(wc)
 
 # we only consider the most common words out of all
 com_words = dict(wc.most_common(40))
@@ -89,8 +86,11 @@ for answer in df['answer']:
   term_freq = []
   for word in com_words.keys():
     term_freq.append(answer.count(word))
-  # print(term_freq)
   tf_vectors.append(term_freq)
+
+
+# initially, the previously popped words were removed directly with the assumption that the accuracy will increase
+# however, it was noticed that removing the words negatively impacted the accuracy of the model. Hence it is placed in comments.
 
 # popouts = [28,13,8,7,6,4,2,1] # added extra based on observation => 4,7,
 # popouts = [7]
@@ -101,9 +101,6 @@ for answer in df['answer']:
 ###################################################################################
 #################### CLASSIFICATION USING ML ######################################
 ###################################################################################
-# now, out of these, we use dimensionality reduction to choose the most useful words
-# decision tree classifier is used.
-
 
 randomState = random.randint(0,100)
 # randomState = 20
