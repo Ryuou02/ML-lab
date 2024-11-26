@@ -80,15 +80,12 @@ def checkAccuracy2(y_test, layer1, layer2):
 
 
 df = pd.read_csv(dataset,encoding='windows-1252')
-# df = df.tail(429 - 161)
 wc = Counter()
 for answer in df["answer"]:
   answer = str(answer)
   answer = answer.lower()
   wc.update(Counter(word_tokenize(answer)))
 
-# print(wc)
-
 
 
 wc = Counter()
@@ -96,8 +93,6 @@ for answer in df["answer"]:
   answer = str(answer)
   answer = answer.lower()
   wc.update(Counter(word_tokenize(answer)))
-
-# print(wc)
 
 # we only consider the most common words out of all
 com_words = dict(wc.most_common(34))
@@ -117,14 +112,12 @@ for answer in df['answer']:
   term_freq = []
   for word in com_words.keys():
     term_freq.append(answer.count(word))
-  # print(term_freq)
   tf_vectors.append(term_freq)
 
-max_stutter_order = 3
+max_stutter_order = 3  # max order considered for alternate word stutters.
 stutters = []
 for answer in df['answer']:
   answer_words = word_tokenize(str(answer).lower())
-  # the 3 commonly identified stutters
   isdbst = 0  # variable to check whether it is a double word stutter.
   istpst = 0  # to check whether it is a triple word stutter.
 
@@ -156,9 +149,6 @@ for answer in df['answer']:
 ###################################################################################
 #################### CLASSIFICATION USING ML ######################################
 ###################################################################################
-# now, out of these, we use dimensionality reduction to choose the most useful words
-# decision tree classifier is used.
-
 
 randomState = random.randint(0,100)
 print('random state ->', randomState)
@@ -166,25 +156,20 @@ print('random state ->', randomState)
 X = stutters
 y = df['clarity'].values.astype('b')
 
-
-# smote=SMOTE(sampling_strategy='minority') 
-# X,y=smote.fit_resample(X,y)
-
+# SMOTE is not used for class imbalance as the synthesized dataset is not uniform for stutter and common words.
 
 X_train, X_test_1, y_train, y_test_1 = train_test_split(X, y, test_size=0.3, random_state=randomState)
 
 clf = MLPClassifier(max_iter=4000)
-
 clf.fit(X_train,y_train)
-# checkAccuracy(clf,y_test,X_test)
 
+# prediction given by layer 1 relates to the stutters.
 layer_1_predictions = clf.predict(X_test_1)
 
-X = tf_vectors
-
-# smote=SMOTE(sampling_strategy='minority') 
-# X,y=smote.fit_resample(X,y)
 ##############################################################################################------------------
+
+
+X = tf_vectors
 
 
 clf1 = MLPClassifier(max_iter=4000)
@@ -195,6 +180,7 @@ print(clf2.get_params())
 
 
 X_train, X_temp, y_train, y_temp = train_test_split(X, y, test_size=0.5, random_state=randomState)
+# the data is split into test data as well but it will remain unutilised so that there are gaps in the data which is used for training the model.
 X_temp, X_test, y_temp, y_test = train_test_split(X_temp, y_temp, test_size=0.2, random_state=randomState)
 
 clf1.fit(X_train,y_train)
@@ -242,6 +228,7 @@ y_pred_layer1 = [roundoff(pr) for pr in y_pred_temp]
 print("prediction -> ",y_pred_layer1)
 ########################################################################################################-------------------
 
+# prediction given by layer 2 is from the stacking model
 layer_2_predictions = y_pred
 
 checkAccuracy2(y_test_2,layer_1_predictions,layer_2_predictions)
