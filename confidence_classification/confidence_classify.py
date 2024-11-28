@@ -30,7 +30,6 @@ import sklearn.metrics
 import librosa
 from sklearn.neural_network import MLPClassifier
 import pandas as pd
-#from playsound import playsound
 from sklearn.metrics import recall_score,f1_score,precision_score,accuracy_score, confusion_matrix, ConfusionMatrixDisplay 
 
 def checkAccuracy(clf, y_test, X_test):
@@ -70,47 +69,54 @@ for f in file_paths:
 
 # pad or truncate MFCC so that it can be of uniform size so that it can be placed into the ML model.
   if mfcc.shape[0] < max_length:
-      # librosa.display.specshow(mfcc, y_axis='time')
-      # plt.show()
       padding = max_length - mfcc.shape[0]
       mfcc = np.pad(mfcc, ((padding,0), (0, 0)), mode='constant')
-      # librosa.display.specshow(mfcc, y_axis='time')
-      # plt.show()
   else:
-      # librosa.display.specshow(mfcc, y_axis='time')
-      # plt.show()
       mfcc = mfcc[-max_length - 1:-1, :]
-      # librosa.display.specshow(mfcc, y_axis='time')
-      # plt.show()
   mfccs.append(mfcc)
 
 X_flattened = np.array([x.flatten() for x in mfccs])
 X = X_flattened
 y = df["confidence"].to_list()
 
+# smote=SMOTE(sampling_strategy='minority') 
+# X,y=smote.fit_resample(X,y)
+
+randomState = 60
+X_train, X_test, y_train, y_test = train_test_split(X,y, test_size=0.3, random_state=randomState)
 
 
-X_train, X_test, y_train, y_test = train_test_split(X,y, test_size=0.3, random_state=random.randint(0,100))
+rf = RandomForestClassifier(n_estimators=944,max_features="sqrt",max_depth=70)
 
-# Standardize features
-scaler = StandardScaler()
-X_train = scaler.fit_transform(X_train)
-X_test = scaler.transform(X_test)
-
-mlp = MLPClassifier(max_iter=1000)
-knn = KNeighborsClassifier()
-rf = RandomForestClassifier()
-dt = DecisionTreeClassifier()
-
+def modelComparison():
+  knn = KNeighborsClassifier()
+  mlp = MLPClassifier(max_iter=2000)
+  dt = DecisionTreeClassifier()
+  print("knn",cross_val_score(knn,X,y,cv=5))
+  print("rf",cross_val_score(rf,X,y,cv=5))
+  print("mlp",cross_val_score(mlp,X,y,cv=5))
+  print("dt",cross_val_score(dt,X,y,cv=5))
 
 
-print("knn",cross_val_score(knn,X,y,cv=5))
-print("rf",cross_val_score(rf,X,y,cv=5))
-print("mlp",cross_val_score(mlp,X,y,cv=5))
-print("dt",cross_val_score(dt,X,y,cv=5))
+rf.fit(X_train, y_train)
 
+checkAccuracy(rf,y_test,X_test)
 
-knn.fit(X_train, y_train)
-# knn.fit(X_test,y_test)
+def HyperParmeterTune():  # identify best hyperparameters for random forest model.
+  n_estimators = [int(x) for x in np.linspace(start = 100, stop = 2000, num = 10)]
+  # Number of features to consider at every split
+  max_features = ['log2', 'sqrt',None]
+  # Maximum number of levels in tree
+  max_depth = [int(x) for x in np.linspace(10, 110, num = 11)]
+  max_depth.append(None)
 
-# checkAccuracy(knn,y_test,X_test)
+  random_grid = {'n_estimators': n_estimators,
+                'max_features': max_features,
+                'max_depth': max_depth,
+                }
+  clf = RandomForestClassifier()
+  rf_random = RandomizedSearchCV(estimator = clf, param_distributions = random_grid, n_iter = 100, cv = 5, verbose=2,n_jobs=15)# Fit the random search model
+  rf_random.fit(X_train, y_train)
+  print(rf_random.best_params_)
+
+# HyperParmeterTune()
